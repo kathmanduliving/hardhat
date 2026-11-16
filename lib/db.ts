@@ -1,5 +1,6 @@
 import type { Helmet } from "./types.ts";
 import { helmets } from "./data/helmets.ts";
+import { CATEGORIES } from "./categories.ts";
 
 export type ListOptions = {
   category?: string;
@@ -7,13 +8,6 @@ export type ListOptions = {
   sort?: string;
   limit?: number;
 };
-
-export const CATEGORIES = [
-  { slug: "full-face", name: "Full Face" },
-  { slug: "modular", name: "Modular" },
-  { slug: "half-face", name: "Half Face" },
-  { slug: "off-road", name: "Off Road" },
-] as const;
 
 const byNewest = (a: Helmet, b: Helmet) =>
   b.created_at.localeCompare(a.created_at);

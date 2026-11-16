@@ -8,6 +8,30 @@
 
 **Tech Stack:** Next 16.4.6, React 19.3, TypeScript 5, Tailwind 4 (`@tailwindcss/turbopack`), `three` + `@react-three/fiber` + `@react-three/drei`. Tests: `node --test` (Node 24 native TypeScript stripping). No other dependencies.
 
+## As built — deviations from this plan
+
+Two things changed during execution. The spec
+(`docs/superpowers/specs/2026-11-16-helmet-store-design.md`) is up to date;
+this plan is kept as written for the record.
+
+1. **No product photography and no hero poster image.** The Khronos poster is
+   a 130 px thumbnail, and freely licensed helmet stock is crash-damage and
+   rider photography, not product shots. Instead `components/HelmetArt.tsx`
+   draws a vector helmet tinted with the product's colour, and
+   `components/ProductImage.tsx` picks a photo when `images[0]` exists and the
+   vector art when it does not. So every catalogue row ships `images: []`,
+   `next.config.ts` needs no `images.remotePatterns` yet, and the hero's
+   fallback is `HelmetArt`, not a `<Image>`. Task 1 step 4, task 1 step 5's
+   poster download, task 2 step 3's Unsplash URLs and task 7's `Poster()` are
+   superseded.
+2. **`CartItem` gained `colorHex`**, so the drawer can tint the vector art for
+   the colour that was actually chosen.
+3. The hero's environment map is built from drei `Lightformer`s instead of
+   `<Environment preset="city" />`, which would fetch an HDRI from a CDN at
+   runtime.
+4. `npm test` runs `node --test lib/lib.test.ts`; passing the directory makes
+   Node resolve `lib` as a module and fail.
+
 ## Global Constraints
 
 - Node is v24.12.0. `node --test` strips TypeScript natively: use **erasable syntax only** in `lib/` — no `enum`, no `namespace`, no constructor parameter properties. Types are imported with `import type`.

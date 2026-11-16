@@ -35,7 +35,10 @@ components/
   hero/Hero3D.tsx     client, dynamic import, ssr:false
   hero/HelmetModel.tsx
   ProductCard.tsx
-  cart/CartProvider.tsx, CartDrawer.tsx, AddToCart.tsx
+  HelmetArt.tsx       vector helmet, tinted per product colour
+  ProductImage.tsx    photo when one exists, vector art when not
+  shop/Filters.tsx
+  cart/CartProvider.tsx, CartDrawer.tsx, AddToCart.tsx, QuickAdd.tsx
   nav/Header.tsx, Footer.tsx
 lib/
   types.ts            Helmet, CartItem
@@ -43,7 +46,7 @@ lib/
   data/helmets.ts     dummy rows
   cart.ts             pure total/merge math
   format.ts           NPR formatter
-public/models/        helmet .glb + poster.jpg
+public/models/        helmet .glb
 ```
 
 Each unit has one job. Components import `lib/db` only through server
@@ -84,8 +87,16 @@ Bodies filter the in-memory array today. Supabase migration replaces the
 bodies with `supabase.from('helmets')` queries; signatures and all call
 sites stay identical.
 
-Catalog: 16 helmets, 5 brands, 4 categories. Product images are remote
-Unsplash URLs allowed via `next.config.ts` `images.remotePatterns`.
+Catalog: 16 helmets, 5 brands, 4 categories.
+
+Product photography does not exist yet, and the freely licensed stock that
+does exist is crash-test and rider photography, not product shots — a grid of
+it looks broken rather than sparse. So `images` ships empty on every row and
+`components/HelmetArt.tsx` draws a vector helmet tinted with the product's
+colour. `components/ProductImage.tsx` holds the single branch: a photo when
+`images[0]` exists, vector art when it does not. Real photography arrives by
+filling `images`; no component changes, and remote hosts are added to
+`next.config.ts` `images.remotePatterns` at that point.
 
 ## Homepage
 
@@ -93,10 +104,11 @@ Unsplash URLs allowed via `next.config.ts` `images.remotePatterns`.
    drag to orbit (no zoom, no pan), studio HDR environment, contact
    shadow. Headline + two CTAs overlaid. Scroll pulls the camera back
    and fades the overlay.
-   - Client component, `dynamic(..., { ssr: false })`, Suspense fallback
-     = `public/models/poster.jpg` at the same dimensions, so no CLS.
-   - `prefers-reduced-motion: reduce` or coarse pointer with low DPR:
-     render the poster, skip the canvas entirely. No WebGL cost on weak
+   - Client component, `dynamic(..., { ssr: false })`. The fallback is
+     `HelmetArt` at hero size, filling the same box, so there is no CLS
+     when the canvas takes over.
+   - `prefers-reduced-motion: reduce`, or no WebGL2 context: render the
+     vector fallback and never mount the canvas. No WebGL cost on weak
      phones.
    - Asset: Khronos `DamagedHelmet` GLB (~3.7 MB), CC BY-NC 4.0, attributed in
      `NOTICE.md`. Non-commercial licence, so it is a development
@@ -127,7 +139,8 @@ over all slugs; 404 via `notFound()` for unknown slugs.
 ## Cart
 
 `CartProvider` (client context) holds `CartItem[]`
-(`helmetId, slug, name, image, price_npr, size, color, qty`). Same
+(`helmetId, slug, name, image, colorHex, price_npr, size, color, qty` —
+`colorHex` tints the vector fallback in the drawer). Same
 helmet with the same size and colour merges and increments qty; a
 different size or colour is a separate line. Persisted to
 `localStorage` under `hht.cart.v1`, read inside `useEffect` so SSR and
@@ -138,8 +151,10 @@ Drawer: line items, qty steppers, remove, subtotal, disabled
 ## Error handling
 
 - Unknown slug: `notFound()`.
-- GLB fails to load or WebGL is unavailable: error boundary renders the
-  poster. The page never breaks on a 3D failure.
+- GLB fails to load or WebGL is unavailable: an error boundary renders the
+  vector fallback. The page never breaks on a 3D failure. The scene's
+  environment map is built from drei `Lightformer`s rather than a CDN HDRI,
+  so the hero needs no network beyond the GLB itself.
 - Bad `searchParams` values: ignored, fall back to defaults.
 - `localStorage` throws or holds malformed JSON: start with an empty
   cart, never crash.
