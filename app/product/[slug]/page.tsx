@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { AddToCart } from "@/components/cart/AddToCart.tsx";
 import { ProductCard } from "@/components/ProductCard.tsx";
 import { ProductImage } from "@/components/ProductImage.tsx";
@@ -12,9 +13,28 @@ export async function generateStaticParams() {
   return helmets.map((h) => ({ slug: h.slug }));
 }
 
-export default async function ProductPage({
-  params,
-}: PageProps<"/product/[slug]">) {
+function Skeleton() {
+  return (
+    <div className="mt-8 grid gap-10 lg:grid-cols-2">
+      <div className="aspect-square animate-pulse rounded-2xl border border-line bg-surface" />
+      <div className="space-y-4">
+        <div className="h-10 w-3/4 animate-pulse rounded bg-surface" />
+        <div className="h-6 w-1/3 animate-pulse rounded bg-surface" />
+        <div className="h-24 animate-pulse rounded bg-surface" />
+      </div>
+    </div>
+  );
+}
+
+export default function ProductPage({ params }: PageProps<"/product/[slug]">) {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-7xl px-5 py-10"><Skeleton /></div>}>
+      <Detail params={params} />
+    </Suspense>
+  );
+}
+
+async function Detail({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const helmet = await getHelmet(slug);
   if (!helmet) notFound();
