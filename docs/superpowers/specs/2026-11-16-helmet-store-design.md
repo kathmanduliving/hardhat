@@ -142,9 +142,14 @@ over all slugs; 404 via `notFound()` for unknown slugs.
 (`helmetId, slug, name, image, colorHex, price_npr, size, color, qty` —
 `colorHex` tints the vector fallback in the drawer). Same
 helmet with the same size and colour merges and increments qty; a
-different size or colour is a separate line. Persisted to
-`localStorage` under `hht.cart.v1`, read inside `useEffect` so SSR and
-first paint match, wrapped in try/catch for private-mode failures.
+different size or colour is a separate line.
+
+The items live in `lib/cart-store.ts`, a browser-only module read through
+`useSyncExternalStore`; `localStorage` under `hht.cart.v1` only persists
+them. That keeps the first client render consistent with the server's empty
+cart without setting state from an effect, and syncs open tabs through the
+`storage` event. Every storage call is wrapped in try/catch, so blocked or
+private-mode storage degrades to a session-only cart.
 Drawer: line items, qty steppers, remove, subtotal, disabled
 "Checkout — coming soon".
 

@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { Component, useEffect, useState } from "react";
+import { Component, useSyncExternalStore } from "react";
 import type { ReactNode } from "react";
 import { HelmetArt } from "@/components/HelmetArt.tsx";
 
@@ -32,20 +32,27 @@ class CanvasBoundary extends Component<
   }
 }
 
+// The answer cannot change for the life of the document, so it is read once
+// and never subscribed to.
+const neverChanges = () => () => {};
+let detected: boolean | null = null;
+
+function detect(): boolean {
+  if (detected === null) {
+    try {
+      detected =
+        !window.matchMedia("(prefers-reduced-motion: reduce)").matches &&
+        !!document.createElement("canvas").getContext("webgl2");
+    } catch {
+      detected = false;
+    }
+  }
+  return detected;
+}
+
 /** True only when the browser can and should run WebGL here. */
 function use3DEnabled(): boolean {
-  const [enabled, setEnabled] = useState(false);
-
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    try {
-      setEnabled(!!document.createElement("canvas").getContext("webgl2"));
-    } catch {
-      setEnabled(false);
-    }
-  }, []);
-
-  return enabled;
+  return useSyncExternalStore(neverChanges, detect, () => false);
 }
 
 export function Hero3D() {

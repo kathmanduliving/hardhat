@@ -4,20 +4,19 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
+  useSyncExternalStore,
 } from "react";
 import type { ReactNode } from "react";
 import type { CartItem } from "@/lib/types.ts";
+import { addItem, count, setQty as setQtyIn, subtotal } from "@/lib/cart.ts";
 import {
-  CART_STORAGE_KEY,
-  addItem,
-  count,
-  parseCart,
-  setQty as setQtyIn,
-  subtotal,
-} from "@/lib/cart.ts";
+  getServerSnapshot,
+  getSnapshot,
+  setItems,
+  subscribe,
+} from "@/lib/cart-store.ts";
 
 type CartValue = {
   items: CartItem[];
@@ -33,36 +32,16 @@ type CartValue = {
 const CartContext = createContext<CartValue | null>(null);
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([]);
+  const items = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const [open, setOpen] = useState(false);
-  const [hydrated, setHydrated] = useState(false);
-
-  // Read after mount so the server render and the first client render match.
-  useEffect(() => {
-    try {
-      setItems(parseCart(window.localStorage.getItem(CART_STORAGE_KEY)));
-    } catch {
-      // Blocked or private-mode storage: start empty.
-    }
-    setHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    try {
-      window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
-    } catch {
-      // Full or blocked storage: the cart still works for this session.
-    }
-  }, [items, hydrated]);
 
   const add = useCallback((item: CartItem) => {
-    setItems((current) => addItem(current, item));
+    setItems(addItem(getSnapshot(), item));
     setOpen(true);
   }, []);
 
   const setQty = useCallback((key: string, qty: number) => {
-    setItems((current) => setQtyIn(current, key, qty));
+    setItems(setQtyIn(getSnapshot(), key, qty));
   }, []);
 
   const clear = useCallback(() => setItems([]), []);
