@@ -14,7 +14,7 @@ Dummy data now, Supabase later — the swap must not touch any component.
 In: home, shop grid with filters, product detail, client-side cart.
 Out (v1): auth, checkout, payments, search, reviews, admin, i18n, orders.
 
-Market: Nepal. Currency NPR, formatted `NPR 6,399` (`en-NP`, no decimals).
+Market: Nepal. Currency NPR, formatted `NPR 6,399` (`en-IN` grouping, no decimals).
 
 ## Stack
 
@@ -98,8 +98,9 @@ Unsplash URLs allowed via `next.config.ts` `images.remotePatterns`.
    - `prefers-reduced-motion: reduce` or coarse pointer with low DPR:
      render the poster, skip the canvas entirely. No WebGL cost on weak
      phones.
-   - Asset: Khronos `SciFiHelmet` GLB, CC BY 4.0, attributed in
-     `NOTICE.md`. Placeholder — a licensed motorcycle-helmet GLB dropped
+   - Asset: Khronos `DamagedHelmet` GLB (~3.7 MB), CC BY-NC 4.0, attributed in
+     `NOTICE.md`. Non-commercial licence, so it is a development
+     placeholder only — a licensed motorcycle-helmet GLB dropped
      at the same path replaces it with no code change.
 2. Shop-by-brand tiles (5).
 3. Hot Items — `featured` helmets, same `ProductCard` as the shop grid.
