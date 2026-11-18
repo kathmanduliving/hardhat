@@ -37,6 +37,7 @@ components/
   ProductCard.tsx
   HelmetArt.tsx       vector helmet, tinted per product colour
   ProductImage.tsx    photo when one exists, vector art when not
+  hero/HelmetModel.tsx  full-face helmet built from three.js geometry
   shop/Filters.tsx
   cart/CartProvider.tsx, CartDrawer.tsx, AddToCart.tsx, QuickAdd.tsx
   nav/Header.tsx, Footer.tsx
@@ -46,7 +47,6 @@ lib/
   data/helmets.ts     dummy rows
   cart.ts             pure total/merge math
   format.ts           NPR formatter
-public/models/        helmet .glb
 ```
 
 Each unit has one job. Components import `lib/db` only through server
@@ -100,7 +100,7 @@ filling `images`; no component changes, and remote hosts are added to
 
 ## Homepage
 
-1. **3D hero** — full-viewport canvas. GLB helmet, slow auto-rotate,
+1. **3D hero** — full-viewport canvas. Helmet, slow auto-rotate,
    drag to orbit (no zoom, no pan), studio HDR environment, contact
    shadow. Headline + two CTAs overlaid. Scroll pulls the camera back
    and fades the overlay.
@@ -110,10 +110,15 @@ filling `images`; no component changes, and remote hosts are added to
    - `prefers-reduced-motion: reduce`, or no WebGL2 context: render the
      vector fallback and never mount the canvas. No WebGL cost on weak
      phones.
-   - Asset: Khronos `DamagedHelmet` GLB (~3.7 MB), CC BY-NC 4.0, attributed in
-     `NOTICE.md`. Non-commercial licence, so it is a development
-     placeholder only — a licensed motorcycle-helmet GLB dropped
-     at the same path replaces it with no code change.
+   - Model: no downloaded asset. `components/hero/HelmetModel.tsx` builds
+     a full-face road helmet — the LS2/Axor shape common in Nepal — from
+     three.js geometry: a revolved shell, an eyeport surround, a smoked
+     visor, a chin bar with vent, brow and crown vents, visor pivots, a
+     crown stripe in the accent colour and a neck roll. Chosen over a GLB
+     because no realistic motorcycle helmet exists with a clean commercial
+     licence and a direct download; the sci-fi sample models read as game
+     props. It also saves ~3.7 MB and leaves every proportion tunable in
+     that file's `DIMS`.
 2. Shop-by-brand tiles (5).
 3. Hot Items — `featured` helmets, same `ProductCard` as the shop grid.
 4. Shop-by-category tiles (4).
@@ -156,10 +161,10 @@ Drawer: line items, qty steppers, remove, subtotal, disabled
 ## Error handling
 
 - Unknown slug: `notFound()`.
-- GLB fails to load or WebGL is unavailable: an error boundary renders the
+- The scene throws or WebGL is unavailable: an error boundary renders the
   vector fallback. The page never breaks on a 3D failure. The scene's
   environment map is built from drei `Lightformer`s rather than a CDN HDRI,
-  so the hero needs no network beyond the GLB itself.
+  so the hero fetches nothing at runtime at all.
 - Bad `searchParams` values: ignored, fall back to defaults.
 - `localStorage` throws or holds malformed JSON: start with an empty
   cart, never crash.

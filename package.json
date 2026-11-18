@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test lib/lib.test.ts"
+    "test": "node --test lib/lib.test.ts lib/helmet-shape.test.ts"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",
