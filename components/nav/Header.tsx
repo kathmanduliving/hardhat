@@ -9,9 +9,17 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-line/70 bg-background/80 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-8 px-5">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-5 px-5 sm:gap-8">
         <Link href="/" className="text-sm font-bold uppercase tracking-[0.2em]">
           Hard<span className="text-accent">Hat</span>
+        </Link>
+
+        {/* The full nav is desktop-only, so phones still need one way in. */}
+        <Link
+          href="/shop"
+          className="text-sm text-muted transition-colors hover:text-foreground md:hidden"
+        >
+          Shop
         </Link>
 
         <nav className="hidden flex-1 items-center gap-6 text-sm text-muted md:flex">
